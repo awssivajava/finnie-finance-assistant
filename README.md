@@ -76,17 +76,17 @@ Finance Assistant/
 
 ```mermaid
 flowchart LR
-  UI[Streamlit UI\nstreamlit_app.py] --> Router[RouterAgent]
+  UI[Streamlit UI<br/>streamlit_app.py] --> Router[RouterAgent]
 
   Router --> Edu[EducationAgent]
   Router --> Port[PortfolioAgent]
   Router --> Mkt[MarketAgent]
 
-  Edu --> KB[Markdown KB\n(data/*.md)]
-  KB --> FAISS[FAISS Index\n(knowledge_base.py)]
-  Edu --> LLM[OpenAI Chat\n(llm_client.py)]
+  Edu --> KB[Markdown KB<br/>data/*.md]
+  KB --> FAISS[FAISS Index<br/>knowledge_base.py]
+  Edu --> LLM[OpenAI Chat<br/>llm_client.py]
 
-  Port --> PF[Portfolio Math\n(models/portfolio.py)]
+  Port --> PF[Portfolio Math<br/>models/portfolio.py]
   Mkt --> YF[yfinance API]
 
   Edu --> Comp[ComplianceAgent]
