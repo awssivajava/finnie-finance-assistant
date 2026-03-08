@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import List, Dict
 
 import numpy as np
+import pandas as pd
 import yfinance as yf
 
 
@@ -52,18 +53,29 @@ def analyze_portfolio(raw: Dict[str, float]) -> PortfolioAnalysis:
     hist = yf.download(tickers=tickers_str, period="2mo", interval="1d", progress=False)
     vol_30d: float | None = None
     if not hist.empty:
-        prices = hist["Adj Close"]
-        if isinstance(prices, dict) or hasattr(prices, "columns"):
-            # Ensure we have a 2D structure
-            pass
-        rets = prices.pct_change().dropna()
-        if len(rets) >= 30:
-            last_30 = rets.tail(30)
-            if isinstance(last_30, np.ndarray):
+        # Handle both single- and multi-ticker shapes from yfinance.
+        prices: pd.DataFrame | None = None
+        if isinstance(hist.columns, pd.MultiIndex):
+            # Multi-index: (ticker, field)
+            try:
+                prices = hist.xs("Adj Close", axis=1, level=1)
+            except KeyError:
+                try:
+                    prices = hist.xs("Close", axis=1, level=1)
+                except KeyError:
+                    prices = None
+        else:
+            if "Adj Close" in hist.columns:
+                prices = hist[["Adj Close"]]
+            elif "Close" in hist.columns:
+                prices = hist[["Close"]]
+
+        if prices is not None and not prices.empty:
+            rets = prices.pct_change().dropna()
+            if len(rets) >= 30:
+                last_30 = rets.tail(30)
                 port_rets = last_30.mean(axis=1)
-            else:
-                port_rets = last_30.mean(axis=1)
-            vol_30d = float(np.std(port_rets)) * np.sqrt(252)
+                vol_30d = float(port_rets.std()) * np.sqrt(252)
 
     comment_parts = []
     if diversification_score < 0.4:
