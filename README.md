@@ -72,6 +72,29 @@ Finance Assistant/
     secrets.toml.example
 ```
 
+## Architecture diagram
+
+```mermaid
+flowchart LR
+  UI[Streamlit UI\nstreamlit_app.py] --> Router[RouterAgent]
+
+  Router --> Edu[EducationAgent]
+  Router --> Port[PortfolioAgent]
+  Router --> Mkt[MarketAgent]
+
+  Edu --> KB[Markdown KB\n(data/*.md)]
+  KB --> FAISS[FAISS Index\n(knowledge_base.py)]
+  Edu --> LLM[OpenAI Chat\n(llm_client.py)]
+
+  Port --> PF[Portfolio Math\n(models/portfolio.py)]
+  Mkt --> YF[yfinance API]
+
+  Edu --> Comp[ComplianceAgent]
+  Port --> Comp
+  Mkt --> Comp
+  Comp --> UI
+```
+
 ## Setup
 
 ### 1. Create virtual environment and install dependencies
