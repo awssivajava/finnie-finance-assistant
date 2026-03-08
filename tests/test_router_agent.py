@@ -18,3 +18,9 @@ def test_router_market_keywords():
     decision = router.route("What is the price of AAPL today?", active_tab="Chat")
     assert decision.intent == Intent.MARKET
 
+
+def test_router_definition_etf():
+    router = RouterAgent()
+    decision = router.route("Explain what is an ETF", active_tab="Chat")
+    assert decision.intent == Intent.EDUCATION
+

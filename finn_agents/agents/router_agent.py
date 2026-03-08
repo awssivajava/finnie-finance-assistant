@@ -37,12 +37,44 @@ class RouterAgent:
         # Keyword-based refinements
         if any(word in text for word in ["my portfolio", "holdings", "allocation", "rebalance"]):
             return RoutingDecision(intent=Intent.PORTFOLIO, reason="Mentions portfolio-related keywords.")
-        if any(word in text for word in ["stock", "etf", "price", "today", "market", "index"]):
+
+        definition_cues = [
+            "what is",
+            "what are",
+            "explain",
+            "tell me about",
+            "overview of",
+            "basics of",
+            "difference between",
+            "meaning of",
+            "define",
+            "definition of",
+        ]
+        market_data_cues = [
+            "price",
+            "quote",
+            "today",
+            "market",
+            "index",
+            "trend",
+            "performance",
+            "returns",
+            "volatility",
+            "chart",
+            "ytd",
+            "%",
+            "percent",
+            "change",
+        ]
+        instrument_terms = ["stock", "etf", "bond", "mutual fund", "fund", "ticker"]
+
+        if any(word in text for word in definition_cues) and not any(word in text for word in market_data_cues):
+            return RoutingDecision(intent=Intent.EDUCATION, reason="Conceptual explanation requested.")
+
+        if any(word in text for word in market_data_cues) or any(word in text for word in instrument_terms):
             if base_intent == Intent.PORTFOLIO:
                 return RoutingDecision(intent=Intent.MIXED, reason="Blend of market and portfolio questions.")
             return RoutingDecision(intent=Intent.MARKET, reason="Mentions market-related keywords.")
-        if any(word in text for word in ["what is", "explain", "difference between", "meaning of"]):
-            return RoutingDecision(intent=Intent.EDUCATION, reason="Conceptual explanation requested.")
 
         return RoutingDecision(intent=base_intent, reason="Fallback to tab-based intent.")
 
