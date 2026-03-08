@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import List, Dict
 
+import pandas as pd
 import yfinance as yf
 
 
@@ -26,23 +27,30 @@ class MarketAgent:
         results: List[Dict[str, str]] = []
 
         # yfinance returns different shapes for single vs multiple tickers; handle both.
-        def handle_single(ticker: str, df):
+        def handle_single(ticker: str, df: pd.DataFrame):
             if df is None or df.empty:
                 return
+            # Prefer Adj Close, fall back to Close
+            price_col = None
+            if "Adj Close" in df.columns:
+                price_col = "Adj Close"
+            elif "Close" in df.columns:
+                price_col = "Close"
+            if price_col is None:
+                return
+
             last = df.iloc[-1]
             first = df.iloc[0]
-            pct_change = (last["Adj Close"] / first["Adj Close"] - 1.0) * 100.0
+            pct_change = (last[price_col] / first[price_col] - 1.0) * 100.0
             results.append(
                 {
                     "ticker": ticker,
-                    "price": f"{last['Adj Close']:.2f}",
+                    "price": f"{last[price_col]:.2f}",
                     "change_5d_pct": f"{pct_change:.1f}",
                 }
             )
 
-        if isinstance(data.columns, tuple) or isinstance(data.columns, list) and isinstance(
-            data.columns[0], tuple
-        ):
+        if isinstance(data.columns, pd.MultiIndex):
             # Multi-index columns (multiple tickers)
             for ticker in clean:
                 if ticker in data.columns.get_level_values(0):
